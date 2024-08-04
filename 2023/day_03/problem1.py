@@ -1,9 +1,9 @@
 """
 Advent of Code 2023
-Day: 02
+Day: 03
 Problem: 01
 Author: Nathan Rand
-Date: 08.03.2024
+Date: 08.04.2024
 """
 import regex as re  
 
