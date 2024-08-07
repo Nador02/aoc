@@ -32,7 +32,6 @@ def main():
 
             # Update future cards quantities in the dict
             for j in range(1,num_matched_numbers+1):
-                if i+j+1 > len(scratchcards): break
                 if i+j+1 in scratchcard_pile.keys():
                     scratchcard_pile[i+j+1] += scratchcard_pile[i+1]
                 else:
