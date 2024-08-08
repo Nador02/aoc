@@ -3,7 +3,7 @@ Advent of Code 2023
 Day: 04
 Problem: 02
 Author: Nathan Rand
-Date: 08.05.2024
+Date: 08.06.2024
 """
 import regex as re
 
