@@ -3,7 +3,7 @@ Advent of Code 2023
 Day: 05
 Problem: 02
 Author: Nathan Rand
-Date: 08.07.2024
+Date: 08.11.2024
 """
 import regex as re
 from FarmingMap import FarmingMap
