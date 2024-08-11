@@ -1,12 +1,9 @@
-import numpy as np
-
 _SOURCE_KEY = "source"
 _DEST_KEY = "dest"
 
 class FarmingMap():
     def __init__(self):
         self.ranges = []
-        self.max_source_val = -np.inf
 
     def add_range(self, source: list, dest: list):
         """Add a range to the farming map."""
@@ -14,34 +11,16 @@ class FarmingMap():
             _SOURCE_KEY: source,
             _DEST_KEY: dest
         })
-        if source[-1] > self.max_source_val:
-            self.max_source_val = source[-1]
     
     def find_range_value_in(self, val: int):
         """Find what range the value falls within, return None
         if it does not fall into any.
         """
-        for range in self.ranges:
-            if val in range[_SOURCE_KEY]:
-                return range
-        return None
-    
-    def find_pseudo_range(self, val: int):
-        """Find our "pseudo range" which is effectively just the local range
-        of values that do not have a range.
-        """
-        next_closest_range_floor = None
-        diff = np.inf
         for range_dict in self.ranges:
-            print(range_dict["source"])
-            if range_dict[_SOURCE_KEY][0] - val < diff and range_dict[_SOURCE_KEY][0] - val > 0:
-                diff = range_dict[_SOURCE_KEY][0] - val
-                next_closest_range_floor = range_dict[_SOURCE_KEY][0]
-
-        if next_closest_range_floor is None:
-            return range(val, self.max_source_val+1)
-
-        return range(val, next_closest_range_floor)
+            source_range = range_dict[_SOURCE_KEY]
+            if val >= source_range[0] and val < source_range[-1]:
+                return range_dict
+        return None
 
     def map_value(self, val: int):
         """Get the corresponding value returned after mapping.
@@ -61,37 +40,57 @@ class FarmingMap():
         If a range does not entirely fall within a single farming map range,
         we need to split it into multiple ranges and return all of them. 
         """
-        # low = range_to_map[0]
-        # high = range_to_map[-1]
-        # low_range_dict = self.find_range_value_in(low)
-        # low_range = low_range_dict[_SOURCE_KEY] if low_range_dict is not None else self.find_pseudo_range(low)
-        # high_range_dict = self.find_range_value_in(high)
-        # high_range = high_range_dict[_SOURCE_KEY] if high_range_dict is not None else self.find_pseudo_range(high)
-
-        # # If the whole range is within a single range in our map, return
-        # # the new mapped range
-        # if low_range == high_range:
-        #     return [range(self.map_value(low), self.map_value(high)+1)]
+        # Empty list base case
+        if len(range_to_map) == 0:
+            return []
         
-        # split_ranges = []
-        # split_point = low_range[-1]
-        # # If not, we need to split it, so grab the split point
-        # while split_point < high:
-        #     # Apppend the split range
-        #     split_ranges.append(range(self.map_value(low), self.map_value(split_point)+1))
+        # Define our low and high value and ranges for checking initial base cases
+        low = range_to_map[0]
+        high = range_to_map[-1]
+        low_range = self.find_range_value_in(low)
+        high_range = self.find_range_value_in(high)
 
-        #     # Define the next split point
-        #     low = split_point + 1
-        #     split_point_dict = self.find_range_value_in(split_point+1)
-        #     split_range = split_point_dict[_SOURCE_KEY] if split_point_dict is not None else self.find_pseudo_range(split_point+1)
-        #     print(split_range)
-        #     split_point = split_range[-1]
-        
-        # # Append the final split range and return the result list
-        # split_ranges.append(range(self.map_value(low), self.map_value(high)))
-        # return split_ranges
+        # Check our two key base cases:
+        # 1. If neither the high or low value are in any ranges, we just return the intial range
+        # 2. If both are in the same range, no splitting is neededm, so we map those values and return the new mapped range
+        if low_range == high_range:
+            if low_range is None:
+                return [range_to_map]
+            else:
+                mapped_low = low_range[_DEST_KEY][low_range[_SOURCE_KEY].index(low)]
+                mapped_high = low_range[_DEST_KEY][low_range[_SOURCE_KEY].index(high)+1]
+                return [range(mapped_low, mapped_high)]
+            
+        # Otherwise we keep splitting up our range till nothing is left
+        mapped_ranges = []
+        for range_dict in self.ranges:
+            source_range = range_dict[_SOURCE_KEY]
+            dest_range = range_dict[_DEST_KEY]
 
-    def map_ranges(self, ranges: list[list[int]]):
+            # Case 1 is high of the source range overlaps with the lower end of ours
+            if source_range[-1] >= low and source_range[0] < low:
+                bottom_idx = -(source_range[-1]-low)
+                mapped_ranges.append(range(dest_range[bottom_idx], dest_range[-1]+1))
+                split_idx = range_to_map.index(source_range[-1])
+                return mapped_ranges + self.map_range(range_to_map[split_idx+1:])
+            
+            # Case 2 is low of the source range overlaps with the higher end of ours
+            if source_range[0] <= high and source_range[-1] > high:
+                top_idx = high-source_range[0]
+                mapped_ranges.append(range(dest_range[0], dest_range[top_idx]+1))
+                split_idx = range_to_map.index(source_range[0])
+                return mapped_ranges + self.map_range(range_to_map[:split_idx])
+            
+            # Case 3 is the range is completely inside ours, so we will have two recursive calls
+            # one for the low remaining range and one for the high
+            if source_range[0] >= low and source_range[-1] <= high:
+                mapped_ranges.append(dest_range)
+                split_indices = [range_to_map.index(source_range[0]), range_to_map.index(source_range[-1])]
+                high_mapped_range = self.map_range(range_to_map[split_indices[1]+1:])
+                low_mapped_range = self.map_range(range_to_map[:split_indices[0]])
+                return mapped_ranges + low_mapped_range + high_mapped_range
+    
+    def map_ranges(self, ranges_to_map: list[list[int]]):
         """Get the corresponding values returned after mapping."""
-        return [self.map_range(range) for range in ranges]
+        return [self.map_range(range_to_map) for range_to_map in ranges_to_map]
 

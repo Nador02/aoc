@@ -7,11 +7,12 @@ Date: 08.07.2024
 """
 import regex as re
 from FarmingMap import FarmingMap
+import sys
 
 _MAP_IDENTIFYING_STRING = "map:"
 
 def main():
-    with open("example.txt", "r") as f:
+    with open("input.txt", "r") as f:
         farming_maps = []
         almanac = f.read().split("\n")
 
@@ -50,13 +51,13 @@ def main():
 
         # Flatten out our mapped_seed_ranges to ensure it a list of ranges
         # (we need this in the case our ranges are split during mapping)
-        print(mapped_seed_ranges)
         mapped_seed_ranges = [range for ranges in mapped_seed_ranges for range in ranges]
     
+    # Grab our lowest range value for each range
+    low_location_numbers = [mapped_range[0] for mapped_range in mapped_seed_ranges]
+        
     # Finally, print out the lowest location number
-    # NOTE: we are not printing every single seed anymore
-    # cause there are a LOT of them
-    # print(f"\nLowest Location Number: {min(mapped_seed_vals)}")
+    print(f"Lowest Location Number: {min(low_location_numbers)}")
 
 
 if __name__ == "__main__":
