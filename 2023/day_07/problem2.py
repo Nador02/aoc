@@ -16,7 +16,7 @@ def main():
         camel_hands = []
         for card_hand_string in card_hand_strings:
             hand, bid = card_hand_string.split(" ")
-            camel_hands.append(CamelHand(hand, int(bid)))
+            camel_hands.append(CamelHand(hand, int(bid), jokers=True))
         
         # Apply our custom quicksort to sort our camel hands
         sorted_camel_hands = camel_quicksort(camel_hands)
