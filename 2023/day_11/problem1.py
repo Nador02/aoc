@@ -10,34 +10,50 @@ import numpy as np
 _GALAXY_CHAR = "#"
 _EMPTY_SPACE_CHAR = "."
 
-def expand_galaxy(galaxy: np.array):
-    """Expands the provided galaxy"""
-    expanded_galaxy = []
-    for i, galaxy_strip in enumerate(galaxy):
-        if _GALAXY_CHAR in galaxy_strip:
-            expanded_galaxy.append(galaxy_strip)
+def expand_universe(universe: np.array):
+    """Expands the provided universe"""
+    expanded_universe = []
+    for i, universe_strip in enumerate(universe):
+        if _GALAXY_CHAR in universe_strip:
+            expanded_universe.append(universe_strip)
             continue
             
-        # If no galaxy is in this row/col, add a row below
+        # If no universe is in this row/col, add a row below
         # with more empty space
-        expanded_galaxy.extend([galaxy_strip, galaxy_strip])
+        expanded_universe.extend([universe_strip, universe_strip])
 
-    return np.array(expanded_galaxy)
+    return np.array(expanded_universe)
 
 def main():
-    with open("example1.txt", "r") as f:
-        # First read in our file data for the galaxy
-        galaxy = np.array([list(galaxy_row) for galaxy_row in f.read().split("\n")])
+    with open("input.txt", "r") as f:
+        # First read in our file data for the universe
+        universe = np.array([list(universe_row) for universe_row in f.read().split("\n")])
 
-    # Expand our galaxy in both the column and row direction
-    expanded_galaxy = expand_galaxy(galaxy) # <- First do it for rows
-    expanded_galaxy = expand_galaxy(expanded_galaxy.T).T # <- then cols
-    print(expanded_galaxy)
+    # Expand our universe in both the column and row direction
+    expanded_universe = expand_universe(universe) # <- First do it for rows
+    expanded_universe = expand_universe(expanded_universe.T).T # <- then cols
     
-    # TODO: Find shorted path between all galaxies,
-    # first identify where they are, and then apply distance formula
-    # potentially while identifying where they are?? (Then we can 
-    # do this in O(N))
+    # Go through and find each galaxy, comparing to all previous 
+    # galaxies to keep up our running sum
+    length_sum = 0
+    galaxies = []
+    for i, row in enumerate(expanded_universe):
+        for j, spot in enumerate(row):
+            if spot != _GALAXY_CHAR:
+                continue
+            
+            # If this is a galaxy, we compare to all previous and
+            # add to our sum each time
+            new_galaxy = (i,j)
+            for galaxy in galaxies:
+                shortest_distance = abs(galaxy[0]-new_galaxy[0]) + abs(galaxy[1]-new_galaxy[1])
+                length_sum += shortest_distance
+            
+            # Then we add this galaxy to our list of galaxies
+            # and continue iterating
+            galaxies.append(new_galaxy)
 
+    # Output our resulting sum
+    print(f"The sum of all the shortest galaxy lengths is: {length_sum}")
 if __name__ == "__main__":
     main() 
