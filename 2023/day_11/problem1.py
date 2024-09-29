@@ -25,7 +25,7 @@ def expand_universe(universe: np.array):
     return np.array(expanded_universe)
 
 def main():
-    with open("input.txt", "r") as f:
+    with open("example1.txt", "r") as f:
         # First read in our file data for the universe
         universe = np.array([list(universe_row) for universe_row in f.read().split("\n")])
 
@@ -52,6 +52,7 @@ def main():
             # Then we add this galaxy to our list of galaxies
             # and continue iterating
             galaxies.append(new_galaxy)
+    print(galaxies)
 
     # Output our resulting sum
     print(f"The sum of all the shortest galaxy lengths is: {length_sum}")
