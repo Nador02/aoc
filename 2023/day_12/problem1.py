@@ -1,60 +1,36 @@
 """
 Advent of Code 2023
-Day: 11
+Day: 12
 Problem: 01
 Author: Nathan Rand
-Date: 09.22.2024
+Date: 10.12.2024
 """
-import numpy as np
 
-_GALAXY_CHAR = "#"
-_EMPTY_SPACE_CHAR = "."
+from typing import NamedTuple
 
-def expand_universe(universe: np.array):
-    """Expands the provided universe"""
-    expanded_universe = []
-    for i, universe_strip in enumerate(universe):
-        if _GALAXY_CHAR in universe_strip:
-            expanded_universe.append(universe_strip)
-            continue
-            
-        # If no universe is in this row/col, add a row below
-        # with more empty space
-        expanded_universe.extend([universe_strip, universe_strip])
 
-    return np.array(expanded_universe)
+class ConditionRecord(NamedTuple):
+    springs: str
+    record: str
+
+    def get_num_arrangements(self):
+        """Determines the number of possible arrangements for a condition record."""
+        # TODO: implement logic here
+        return 1
+
 
 def main():
-    with open("example1.txt", "r") as f:
+    with open("example.txt", "r") as f:
         # First read in our file data for the universe
-        universe = np.array([list(universe_row) for universe_row in f.read().split("\n")])
-
-    # Expand our universe in both the column and row direction
-    expanded_universe = expand_universe(universe) # <- First do it for rows
-    expanded_universe = expand_universe(expanded_universe.T).T # <- then cols
+        condition_records = [ConditionRecord(row.split(" ")[0], row.split(" ")[1])  for row in f.read().split("\n")]
     
-    # Go through and find each galaxy, comparing to all previous 
-    # galaxies to keep up our running sum
-    length_sum = 0
-    galaxies = []
-    for i, row in enumerate(expanded_universe):
-        for j, spot in enumerate(row):
-            if spot != _GALAXY_CHAR:
-                continue
-            
-            # If this is a galaxy, we compare to all previous and
-            # add to our sum each time
-            new_galaxy = (i,j)
-            for galaxy in galaxies:
-                shortest_distance = abs(galaxy[0]-new_galaxy[0]) + abs(galaxy[1]-new_galaxy[1])
-                length_sum += shortest_distance
-            
-            # Then we add this galaxy to our list of galaxies
-            # and continue iterating
-            galaxies.append(new_galaxy)
-    print(galaxies)
+    # Compute our total number of arrangements
+    num_arrangements = 0
+    for cr in condition_records:
+        num_arrangements += cr.get_num_arrangements()
+    
+    # Output the result
+    print(f"Total number of arrangements for the condition records is: {int(num_arrangements)}")
 
-    # Output our resulting sum
-    print(f"The sum of all the shortest galaxy lengths is: {length_sum}")
 if __name__ == "__main__":
     main() 
