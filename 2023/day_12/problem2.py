@@ -1,7 +1,7 @@
 """
 Advent of Code 2023
 Day: 12
-Problem: 01
+Problem: 02
 Author: Nathan Rand
 Date: 10.12.2024
 """
@@ -9,6 +9,7 @@ import itertools
 from enum import StrEnum
 from typing import List, NamedTuple
 
+_UNFOLD_AMOUNT = 5
 
 class Spring(StrEnum):
     DAMAGED = "#"
@@ -62,29 +63,36 @@ class ConditionRecord(NamedTuple):
         num_unknown_springs = self.springs.count(Spring.UNKNOWN)
         product = list(itertools.product([Spring.DAMAGED.value, Spring.OPERATIONAL.value], repeat=num_unknown_springs))
         possibilities = [possibility for possibility in product if possibility.count(Spring.DAMAGED) == num_missing_damaged_springs]
-
+        print(len(possibilities))
         num_arrangements = 0
-        for possibility in possibilities:
-            spring_possibile_order = _map_possibility_to_springs(possibility, self.springs)
-            curr_record = _get_record_from_springs(spring_possibile_order)
-            if curr_record == self.record:
-                num_arrangements += 1
+        # for possibility in possibilities:
+        #     spring_possibile_order = _map_possibility_to_springs(possibility, self.springs)
+        #     curr_record = _get_record_from_springs(spring_possibile_order)
+        #     if curr_record == self.record:
+        #         num_arrangements += 1
         
         return num_arrangements
 
 
 def main():
-    with open("input.txt", "r") as f:
+    with open("example.txt", "r") as f:
         # First read in our file data for the universe
         condition_records = [ConditionRecord.load(row)  for row in f.read().split("\n")]
+
+    # Unfold our condition records
+    unfolded_condition_records = []
+    for cr in condition_records:
+        unfolded_springs = Spring.UNKNOWN.join([cr.springs]*_UNFOLD_AMOUNT)
+        unfolded_record = cr.record*_UNFOLD_AMOUNT
+        unfolded_condition_records.append(ConditionRecord(unfolded_springs, unfolded_record))
     
     # Compute our total number of arrangements
     num_arrangements = 0
-    for cr in condition_records:
+    for cr in unfolded_condition_records:
         num_arrangements += cr.get_num_arrangements()
     
     # Output the result
-    print(f"Total number of arrangements for the condition records is: {int(num_arrangements)}")
+    print(f"Total number of arrangements for the unfolded condition records is: {int(num_arrangements)}")
 
 if __name__ == "__main__":
     main() 
