@@ -8,6 +8,7 @@ Date: 10.12.2024
 import itertools
 from enum import StrEnum
 import re
+import time
 from typing import List, NamedTuple
 
 
@@ -126,6 +127,7 @@ class ConditionRecord(NamedTuple):
         return num_arrangements
 
 def main():
+    start_time = time.time()
     with open("input.txt", "r") as f:
         # First read in our file data for the universe
         condition_records = [ConditionRecord.load(row)  for row in f.read().split("\n")]
@@ -138,6 +140,7 @@ def main():
     
     # Output the result
     print(f"Total number of arrangements for the condition records is: {int(num_arrangements)}")
+    print(f"Computation Time: {time.time()-start_time} s")
 
 if __name__ == "__main__":
     main() 
