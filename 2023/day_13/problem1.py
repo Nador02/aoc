@@ -18,6 +18,7 @@ def get_mirror_sum_contribution(puzzle: np.ndarray, vertical=False):
             mirror_bounds.append((closest_boundary, i+i-1))
         if closest_boundary == len(first_row)-1 and np.array_equal(first_row[2*i-len(first_row):i], first_row[i:][::-1]):
             mirror_bounds.append((2*i-len(first_row), closest_boundary))
+    print(mirror_bounds)
     
     # Now remove mirror bounds if they do not work
     for row in puzzle[1:]:
@@ -40,7 +41,7 @@ def get_mirror_sum_contribution(puzzle: np.ndarray, vertical=False):
 
 def main():
     start_time = time.time()
-    with open("input.txt", "r") as f:
+    with open("example.txt", "r") as f:
         puzzles = [np.array([list(row) for row in puzzle_str.split("\n")]) for puzzle_str in f.read().split("\n\n")]
     
     # Go through each puzzle and determine their sum contributions

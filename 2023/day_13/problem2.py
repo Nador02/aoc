@@ -36,29 +36,49 @@ def get_mirror_sum_contribution(puzzle: np.ndarray, vertical=False):
             if num_diff < 2:
                 mirror_bounds.append(MirrorBound(2*i-len(first_row), closest_boundary, num_diff==1))
 
-    # # Now remove mirror bounds if they do not work
-    # for row in puzzle[1:]:
-    #     if len(mirror_bounds) == 0:
-    #         return 0
-    #     new_mirror_bounds = []
-    #     for mirror_bound in mirror_bounds:
-    #         mid = int(np.ceil(sum(mirror_bound)/2))
-    #         if np.array_equal(row[mirror_bound[0]:mid], row[mid:mirror_bound[1]+1][::-1]):
-    #             new_mirror_bounds.append(mirror_bound)
-    #     mirror_bounds = new_mirror_bounds
+    # Now remove mirror bounds if they do not work
+    for row in puzzle[1:]:
+        if len(mirror_bounds) == 0:
+            return 0
+        
+        new_mirror_bounds = []
+        for mirror_bound in mirror_bounds:
+            mid = int(np.ceil(sum([mirror_bound.l, mirror_bound.r])/2))
+            num_diff = _get_num_differences(row[mirror_bound.l:mid], row[mid:mirror_bound.r+1][::-1])
 
-    # if len(mirror_bounds) == 0:
-    #     return 0
+            # If there is more than one diff nothing can be done, this is invalid, continue
+            if num_diff > 1 :
+                continue
+            
+            # If we have one diff and made it this far
+            if num_diff == 1:
+                # If we already smudged for this we cannot do it again, so continue to skip
+                # this mirror bound
+                if mirror_bound.smudged:
+                    continue
+                # Otherwise add it back but with the smudge flag set to true
+                new_mirror_bounds.append(MirrorBound(mirror_bound.l, mirror_bound.r, True))
+                continue
+            
+            # If we made it down here there is no diff, so just add it back to the new list
+            new_mirror_bounds.append(mirror_bound)
+        mirror_bounds = new_mirror_bounds
 
-    # scale_factor = 1 if vertical else 100
-    # return scale_factor*(sum(mirror_bounds[0])//2+1)
+    # Go through our mirror bounds to find the one that is true
+    # if one exists, return the sum contribution for that
+    # as it is the new one created by smudging
+    for mirror_bound in mirror_bounds:
+        if mirror_bound.smudged:
+            scale_factor = 1 if vertical else 100
+            return scale_factor*(sum([mirror_bound.l, mirror_bound.r])//2+1)
+    
+    # Otherwise, we had no smudge solutions, so return 0
     return 0
     
 
-
 def main():
     start_time = time.time()
-    with open("example.txt", "r") as f:
+    with open("input.txt", "r") as f:
         puzzles = [np.array([list(row) for row in puzzle_str.split("\n")]) for puzzle_str in f.read().split("\n\n")]
     
     # Go through each puzzle and determine their sum contributions
