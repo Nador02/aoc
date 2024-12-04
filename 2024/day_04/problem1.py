@@ -36,6 +36,8 @@ def _is_pos_outside_grid(word_search: List[List[str]], new_pos: tuple):
 def get_neighboring_letter_positions(word_search: List[List[str]], curr: tuple, next_letter: str):
     """Get neighboring letter positions that are valid based on the assigned next letter
     and bounds of the word search in our 2D grid.
+
+    [Extra Solution, Not Needed]
     """
     xmas_neighboring_positions = []
     for direction in _DIRECTIONS:
@@ -55,6 +57,8 @@ def get_neighboring_letter_positions(word_search: List[List[str]], curr: tuple, 
 def xmas_dfs(word_search: List[List[str]], x_indices: List[tuple]):
     """Perform DFS to find all valid XMAS strings from a given list of starting Xs
     Aw shit I solved this TOO good lol, we do not actually need a DFS with defined directions.
+
+    [Extra Solution, Not Needed]
     """
     letter_pos_stack = x_indices
     xmas_counter = 0
@@ -77,7 +81,7 @@ def xmas_dfs(word_search: List[List[str]], x_indices: List[tuple]):
 
 
 def get_xmas_count_for_starting_x(word_search: List[List[str]], x_pos: tuple):
-    """Ok this is probably the easier solution, woopsie lmao"""
+    """Check in all 8 directions from a given X for matching XMAS strings"""
     xmas_counter = 0
     for direction in _DIRECTIONS:
         # Check if we will fall outside the grid, if so, skip this direction
