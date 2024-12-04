@@ -3,7 +3,7 @@ Advent of Code 2024
 Day: 04
 Problem: 01
 Author: Nathan Rand
-Date: 12.01.2024
+Date: 12.04.2024
 """
 from typing import List
 
@@ -72,7 +72,8 @@ def xmas_dfs(word_search: List[List[str]], x_indices: List[tuple]):
 
         next_letter = _XMAS_STR[_XMAS_STR.index(curr_letter)+1]
         letter_pos_stack.extend(
-            get_neighboring_letter_positions(word_search, curr_pos, next_letter)
+            get_neighboring_letter_positions(
+                word_search, curr_pos, next_letter)
         )
 
     return xmas_counter
@@ -115,7 +116,8 @@ def main():
         total_xmas_found += get_xmas_count_for_starting_x(word_search, x_pos)
 
     print(f"Total \"XMAS\" matches found in word search: {total_xmas_found}")
-    print(f"My wild Graph DFS all directions \"XMAS\" count: {xmas_dfs(word_search, x_indices)}")
+    print(f"My wild Graph DFS all directions \"XMAS\" count: {
+          xmas_dfs(word_search, x_indices)}")
 
 
 if __name__ == "__main__":
