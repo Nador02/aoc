@@ -12,45 +12,25 @@ _DO = "do()"
 _DONT = "don't()"
 
 
+def _more_concise_active_mem(corrupted_memory: str):
+    """More concise method for getting the active memory based on stuff
+    I realized after looking at some solutions on Reddit. Using `split()`
+    is significantly faster for this task and creates a much more elegant
+    solution compared to my original.
+    """
+    return "".join([
+        interval[interval.index(_DO):]
+        for interval in (_DO + corrupted_memory).split(_DONT)
+        if _DO in interval
+    ])
+
+
 def main():
     """Advent of Code - Day 03 - Part 02 [Mull It Over]"""
     # Read in our corrupted memory data
     with open(_INPUT_FILE_NAME, "r", encoding="utf-8") as f:
         corrupted_memory = f.read()
 
-    # Determine our active corrupted memory
-    # (Second attempt after looking at some posted solutions
-    # on Reddit. Original independent sol saved in func in this file)
-    active_corrupted_memory = "".join([
-        interval[interval.index(_DO):]
-        for interval in (_DO + corrupted_memory).split(_DONT)
-        if _DO in interval
-    ])
-
-    # Get all matches for our given regex pattern
-    matches = re.findall(
-        r"mul\(([0-9]{1,3}),([0-9]{1,3})\)", active_corrupted_memory)
-
-    # Sum the matching multiplication instructions
-    mul_instructions_sum = 0
-    for match in matches:
-        mul_instructions_sum += int(match[0])*int(match[1])
-
-    # Output our result
-    print(
-        "The sum of all valid multiplication instructions in the "
-        f"active corrupted memory is: {mul_instructions_sum}"
-    )
-
-
-if __name__ == "__main__":
-    main()
-
-
-def _old_active_corrupted_memory_parse(corrupted_memory: str):
-    """Original solution (also works) that uses intervals and a lot of Regex.
-    This definitely is overcomplicating the problem, `split()` is way more effective.
-    """
     # Find all indices of dos and don'ts
     do_start_indices = [do_match.start()
                         for do_match in re.finditer(r"do\(\)", corrupted_memory)]
@@ -83,4 +63,24 @@ def _old_active_corrupted_memory_parse(corrupted_memory: str):
                                                     [1]:inactive_intervals[i+1][0]]
     active_corrupted_memory += corrupted_memory[inactive_intervals[-1][1]:-1]
 
-    return active_corrupted_memory
+    # More concise method based on solutions and realizations from Reddit Solutions
+    # active_corrupted_memory = _more_concise_active_mem(corrupted_memory)
+
+    # Get all matches for our given regex pattern
+    matches = re.findall(
+        r"mul\(([0-9]{1,3}),([0-9]{1,3})\)", active_corrupted_memory)
+
+    # Sum the matching multiplication instructions
+    mul_instructions_sum = 0
+    for match in matches:
+        mul_instructions_sum += int(match[0])*int(match[1])
+
+    # Output our result
+    print(
+        "The sum of all valid multiplication instructions in the "
+        f"active corrupted memory is: {mul_instructions_sum}"
+    )
+
+
+if __name__ == "__main__":
+    main()
