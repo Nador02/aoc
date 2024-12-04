@@ -8,14 +8,49 @@ Date: 12.03.2024
 import re
 import numpy as np
 _INPUT_FILE_NAME = "input.txt"
+_DO = "do()"
+_DONT = "don't()"
 
 
 def main():
     """Advent of Code - Day 03 - Part 02 [Mull It Over]"""
     # Read in our corrupted memory data
-    with open(_INPUT_FILE_NAME, "r") as f:
+    with open(_INPUT_FILE_NAME, "r", encoding="utf-8") as f:
         corrupted_memory = f.read()
 
+    # Determine our active corrupted memory
+    # (Second attempt after looking at some posted solutions
+    # on Reddit. Original independent sol saved in func in this file)
+    active_corrupted_memory = "".join([
+        interval[interval.index(_DO):]
+        for interval in (_DO + corrupted_memory).split(_DONT)
+        if _DO in interval
+    ])
+
+    # Get all matches for our given regex pattern
+    matches = re.findall(
+        r"mul\(([0-9]{1,3}),([0-9]{1,3})\)", active_corrupted_memory)
+
+    # Sum the matching multiplication instructions
+    mul_instructions_sum = 0
+    for match in matches:
+        mul_instructions_sum += int(match[0])*int(match[1])
+
+    # Output our result
+    print(
+        "The sum of all valid multiplication instructions in the "
+        f"active corrupted memory is: {mul_instructions_sum}"
+    )
+
+
+if __name__ == "__main__":
+    main()
+
+
+def _old_active_corrupted_memory_parse(corrupted_memory: str):
+    """Original solution (also works) that uses intervals and a lot of Regex.
+    This definitely is overcomplicating the problem, `split()` is way more effective.
+    """
     # Find all indices of dos and don'ts
     do_start_indices = [do_match.start()
                         for do_match in re.finditer(r"do\(\)", corrupted_memory)]
@@ -24,7 +59,6 @@ def main():
 
     # Determine inactive intervals based on this
     inactive_intervals = []
-    final_dont_start_idx = max(dont_start_indices)
     for dont_start_idx in dont_start_indices:
         # If we hit a don't that is between our previous don't -> do inactive interval
         # then simply continue as this is a sub-interval
@@ -49,21 +83,4 @@ def main():
                                                     [1]:inactive_intervals[i+1][0]]
     active_corrupted_memory += corrupted_memory[inactive_intervals[-1][1]:-1]
 
-    # Get all matches for our given regex pattern
-    matches = re.findall(
-        r"mul\(([0-9]{1,3}),([0-9]{1,3})\)", active_corrupted_memory)
-
-    # Sum the matching multiplication instructions
-    mul_instructions_sum = 0
-    for match in matches:
-        mul_instructions_sum += int(match[0])*int(match[1])
-
-    # Output our result
-    print(
-        "The sum of all valid multiplication instructions in the "
-        f"active corrupted memory is: {mul_instructions_sum}"
-    )
-
-
-if __name__ == "__main__":
-    main()
+    return active_corrupted_memory
