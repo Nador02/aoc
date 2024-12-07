@@ -7,7 +7,7 @@ Date: 12.06.2024
 """
 from copy import deepcopy
 from typing import List
-_INPUT_FILE_NAME = "example2.txt"
+_INPUT_FILE_NAME = "input.txt"
 _OBSTACLE = r"#"
 _GUARD = "^"
 
@@ -41,14 +41,10 @@ def _check_if_cycle(
         direction,
         cycle_obstruction
 ):
-    while True:
-        # Look at the guards next position after taking a step
-        guard_next_pos = _space_in_front(guard_pos, direction)
-        if not _is_position_in_map(lab_map, guard_next_pos):
-            break
-
+    while _is_position_in_map(lab_map, _space_in_front(guard_pos, direction)):
         # If this is an obstacle, turn ourselves to the right (and keep turning
         # to the right till we are no longer moving into an obstacle)
+        guard_next_pos = _space_in_front(guard_pos, direction)
         while _obstacle_on_space(lab_map, guard_next_pos) or guard_next_pos == cycle_obstruction:
             direction = _TURN_RIGHT[direction]
             guard_next_pos = _space_in_front(guard_pos, direction)
@@ -86,14 +82,10 @@ def main():
     # while he bumps into obstacles and turns right over and over
     visited = {guard_pos: [direction]}
     cycle_obstructions = set()
-    while True:
-        # Look at the guards next position after taking a step
-        guard_next_pos = _space_in_front(guard_pos, direction)
-        if not _is_position_in_map(lab_map, guard_next_pos):
-            break
-
+    while _is_position_in_map(lab_map, _space_in_front(guard_pos, direction)):
         # If this is an obstacle, turn ourselves to the right (and keep turning
         # to the right till we are no longer moving into an obstacle)
+        guard_next_pos = _space_in_front(guard_pos, direction)
         while _obstacle_on_space(lab_map, guard_next_pos):
             direction = _TURN_RIGHT[direction]
             guard_next_pos = _space_in_front(guard_pos, direction)
