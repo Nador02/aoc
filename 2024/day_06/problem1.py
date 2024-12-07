@@ -11,10 +11,10 @@ _OBSTACLE = r"#"
 _GUARD = "^"
 
 
-def _is_guard_in_map(map: List[str], guard_pos: tuple):
+def _is_guard_in_map(lab_map: List[str], guard_pos: tuple):
     return (
-        guard_pos[0] >= 0 and guard_pos[0] < len(map)
-        and guard_pos[1] >= 0 and guard_pos[1] < len(map[0])
+        guard_pos[0] >= 0 and guard_pos[0] < len(lab_map)
+        and guard_pos[1] >= 0 and guard_pos[1] < len(lab_map[0])
     )
 
 
