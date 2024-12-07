@@ -1,21 +1,71 @@
 """
 Advent of Code 2024
 Day: 06
-Problem: 01
+Problem: 02
 Author: Nathan Rand
 Date: 12.06.2024
 """
+from copy import deepcopy
 from typing import List
-_INPUT_FILE_NAME = "input.txt"
+_INPUT_FILE_NAME = "example2.txt"
 _OBSTACLE = r"#"
 _GUARD = "^"
 
+_TURN_RIGHT = {
+    (0, -1): (-1, 0),
+    (1, 0): (0, -1),
+    (0, 1): (1, 0),
+    (-1, 0): (0, 1)
+}
 
-def _is_guard_in_map(lab_map: List[str], guard_pos: tuple):
+
+def _is_position_in_map(lab_map: List[str], guard_pos: tuple):
     return (
         guard_pos[0] >= 0 and guard_pos[0] < len(lab_map)
         and guard_pos[1] >= 0 and guard_pos[1] < len(lab_map[0])
     )
+
+
+def _space_in_front(position, direction):
+    return (position[0] + direction[0], position[1] + direction[1])
+
+
+def _obstacle_on_space(lab_map, position):
+    return lab_map[position[0]][position[1]] == _OBSTACLE
+
+
+def _check_if_cycle(
+        lab_map,
+        visited,
+        guard_pos,
+        direction,
+        cycle_obstruction
+):
+    while True:
+        # Look at the guards next position after taking a step
+        guard_next_pos = _space_in_front(guard_pos, direction)
+        if not _is_position_in_map(lab_map, guard_next_pos):
+            break
+
+        # If this is an obstacle, turn ourselves to the right (and keep turning
+        # to the right till we are no longer moving into an obstacle)
+        while _obstacle_on_space(lab_map, guard_next_pos) or guard_next_pos == cycle_obstruction:
+            direction = _TURN_RIGHT[direction]
+            guard_next_pos = _space_in_front(guard_pos, direction)
+
+        # If this is a unique spot, add it to our set
+        if guard_next_pos not in visited:
+            visited[guard_next_pos] = [direction]
+        else:
+            if direction in visited[guard_next_pos]:
+                return True
+            else:
+                visited[guard_next_pos].append(direction)
+
+        # Take our step
+        guard_pos = guard_next_pos
+
+    return False
 
 
 def main():
@@ -26,14 +76,7 @@ def main():
 
     # Find our guard's starting position
     guard_pos = None
-    step = (-1, 0)
-    # TODO: use like unit circle or something for this idfk
-    next_step = {
-        (0, -1): (-1, 0),
-        (1, 0): (0, -1),
-        (0, 1): (1, 0),
-        (-1, 0): (0, 1)
-    }
+    direction = (-1, 0)
     for i, row in enumerate(lab_map):
         if _GUARD in row:
             guard_pos = (i, row.find(_GUARD))
@@ -41,47 +84,49 @@ def main():
 
     # Move our guard through the lab till he leaves, counting his steps
     # while he bumps into obstacles and turns right over and over
-    cycle_obstructions = 0
-    visited = {guard_pos: [step]}
+    visited = {guard_pos: [direction]}
+    cycle_obstructions = set()
     while True:
         # Look at the guards next position after taking a step
-        guard_next_pos = (guard_pos[0]+step[0], guard_pos[1]+step[1])
-        if not _is_guard_in_map(lab_map, guard_next_pos):
+        guard_next_pos = _space_in_front(guard_pos, direction)
+        if not _is_position_in_map(lab_map, guard_next_pos):
             break
 
-        # If this is an obstacle, turn ourselves to the right
-        if lab_map[guard_next_pos[0]][guard_next_pos[1]] == _OBSTACLE:
-            step = next_step[step]
-            guard_next_pos = (guard_pos[0]+step[0], guard_pos[1]+step[1])
+        # If this is an obstacle, turn ourselves to the right (and keep turning
+        # to the right till we are no longer moving into an obstacle)
+        while _obstacle_on_space(lab_map, guard_next_pos):
+            direction = _TURN_RIGHT[direction]
+            guard_next_pos = _space_in_front(guard_pos, direction)
 
-        # If this is a unique spot, add it to our set
+        # If we have a valid obstruction, check if it induces a cycle
+        if (guard_next_pos not in visited and _check_if_cycle(
+            lab_map,
+            deepcopy(visited),
+            guard_pos,
+            _TURN_RIGHT[direction],
+            guard_next_pos
+        )):
+            cycle_obstructions.add(guard_next_pos)
+
+        # If this is a new spot, add it and our current facing direction to our dict
         if guard_next_pos not in visited:
-            visited[guard_next_pos] = [step]
-
-        # Look right and see if we can see a previous path unobstructed
-        look_pos = guard_next_pos
-        look_dir = next_step[step]
-        while True:
-            look_next_pos = (look_pos[0] + look_dir[0], look_pos[1] + look_dir[1])
-            if not _is_guard_in_map(lab_map, look_next_pos) or lab_map[look_next_pos[0]][look_next_pos[1]] == _OBSTACLE:
-                break
-
-            if look_next_pos in visited and look_dir in visited[look_next_pos]:
-                cycle_obstructions += 1
-                break
-
-            look_pos = look_next_pos
-
-        if step not in visited[guard_next_pos]:
-            visited[guard_next_pos].append(step)
+            visited[guard_next_pos] = [direction]
+        # Otherwise, check if this direction is in our visited, if not, add it
+        elif direction not in visited[guard_next_pos]:
+            visited[guard_next_pos].append(direction)
+        # If we hit this we are fucked, we have our main guard in a cycle
+        else:
+            raise ValueError(
+                "Uh your main guard is in a cycle? "
+                "Your CPU may set on fire soon... 🔥"
+            )
 
         # Take our step
         guard_pos = guard_next_pos
 
     # Output our result
     print(
-        "Number of potential obstructions we can add to create "
-        f"cycles: {cycle_obstructions} obstructions."
+        f"Number of potential cycle inducing obstructions: {len(cycle_obstructions)}"
     )
 
 

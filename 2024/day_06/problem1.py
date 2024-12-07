@@ -27,7 +27,6 @@ def main():
     # Find our guard's starting position
     guard_pos = None
     step = (-1, 0)
-    # TODO: use like unit circle or something for this idfk
     next_step = {
         (0, -1): (-1, 0),
         (1, 0): (0, -1),
@@ -50,8 +49,9 @@ def main():
             steps += 1
             break
 
-        # If this is an obstacle, turn ourselves to the right
-        if lab_map[guard_next_pos[0]][guard_next_pos[1]] == _OBSTACLE:
+        # If this is an obstacle, turn ourselves to the right (and keep turning
+        # to the right till we are no longer moving into an obstacle)
+        while lab_map[guard_next_pos[0]][guard_next_pos[1]] == _OBSTACLE:
             step = next_step[step]
             guard_next_pos = (guard_pos[0]+step[0], guard_pos[1]+step[1])
 
