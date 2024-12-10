@@ -6,7 +6,7 @@ Author: Nathan Rand
 Date: 12.09.24
 """
 
-_INPUT_FILE_NAME = "example.txt"
+_INPUT_FILE_NAME = "input.txt"
 
 
 def _unpack_disk_map(disk_map: str):
@@ -64,7 +64,7 @@ def main():
         # if found, move it there, otherwise, do nothing
         search_ptr = front
         running_space_size = 0
-        while search_ptr < back:
+        while search_ptr <= back:
             if uncompressed_disk_map[search_ptr] is not None:
                 search_ptr += 1
                 running_space_size = 0
@@ -85,6 +85,12 @@ def main():
     for i in range(front, len(uncompressed_disk_map)):
         if uncompressed_disk_map[i] is not None:
             filesystem_checksum += i*uncompressed_disk_map[i]
+
+    test_sum = 0
+    for i in range(0, len(uncompressed_disk_map)):
+        if uncompressed_disk_map[i] is not None:
+            test_sum += i*uncompressed_disk_map[i]
+    print(test_sum)
 
     # Output our result
     print(
