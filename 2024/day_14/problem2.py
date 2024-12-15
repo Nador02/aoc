@@ -116,7 +116,7 @@ def main():
                 cmap=matplotlib.cm.Greens,
                 origin="lower"
             )
-            plt.savefig(images_dir / f"robot_positions_{t}.png")
+            plt.savefig(images_dir / f"robot_positions_{t+1}.png")
 
 
 if __name__ == "__main__":
