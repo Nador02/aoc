@@ -19,6 +19,8 @@ _HEIGHT = 103
 _WIDTH = 101
 _X_BOUNDS = (0, _WIDTH)
 _Y_BOUNDS = (0, _HEIGHT)
+_CONSECUTIVE_ROBOTS_LIMIT = 8
+_WAIT_TIME = 10000
 
 
 class Robot():
@@ -83,7 +85,7 @@ def main():
 
     images_dir = Path("images/")
     # Move forward in time to see how our robots move through the space
-    for t in range(1):
+    for t in range(_WAIT_TIME):
         # Create our text based on all the robot positions
         grid = np.zeros((_HEIGHT, _WIDTH))
         for robot in robots:
@@ -91,13 +93,30 @@ def main():
             grid[robot.position[1]][robot.position[0]] = 1
 
         # Only make the image if some condition is met that this *might* be a christmas tree
-        plt.imshow(
-            grid,
-            interpolation='nearest',
-            cmap=matplotlib.cm.Greens,
-            origin="lower"
-        )
-        plt.savefig(images_dir / f"robot_positions_{t}.png")
+        # BRUTE FORCE TIME LETS FREAKING GO
+        # NOTE: probably a better solution for this but I cannot be bothered rn
+        might_be_a_christmas_tree = False
+        running_total = 0
+        for row in grid:
+            for space in row:
+                if space == 1:
+                    running_total += 1
+                    if running_total > _CONSECUTIVE_ROBOTS_LIMIT:
+                        might_be_a_christmas_tree = True
+                        break
+                else:
+                    running_total = 0
+
+        # If we have arbitrarily determined that this might be a christmas tree so produce
+        # the figure so we can visually confirm our downselected plots
+        if might_be_a_christmas_tree:
+            plt.imshow(
+                grid,
+                interpolation='nearest',
+                cmap=matplotlib.cm.Greens,
+                origin="lower"
+            )
+            plt.savefig(images_dir / f"robot_positions_{t}.png")
 
 
 if __name__ == "__main__":
