@@ -66,10 +66,15 @@ class Robot():
         # Otherwise we are about to try and push a box, so check if we can and grab all
         # boxes we might push as a result
         box_queue = [collided_box]
-        boxes_to_move = []
+        boxes_to_move = set()
         while box_queue:
             # Get the next box from the queue
             curr_box = box_queue.pop(0)
+
+            # If we have already accounted for this box (2 boxes both pushing the
+            # same box) then just skip over it cause that is easiest
+            if curr_box in boxes_to_move:
+                continue
 
             # Check if we can move this box in the given direction (no walls).
             # If we cannot, we cannot move any of the boxes so we return
@@ -82,7 +87,7 @@ class Robot():
 
             # Add our boxes to move to the list so we can move them at the end
             # if we are succesful
-            boxes_to_move.append(curr_box)
+            boxes_to_move.add(curr_box)
 
         # Move all our boxes that need to be moved now that we know they all CAN be moved
         for box in boxes_to_move:
@@ -98,6 +103,20 @@ class Box():
         self.position = (
             initial_position,
             (initial_position[0], initial_position[1]+1)
+        )
+
+    def __hash__(self):
+        """This is so we can store a box in a set and compare quickly.
+        We just concatenate our positions together (as this will be unique
+        for any box as boxes cannot share the same spaces).
+
+        [This is cool and useful, I did not know you could do this in python].
+        """
+        return int(
+            str(self.position[0][0]) +
+            str(self.position[0][1]) +
+            str(self.position[1][0]) +
+            str(self.position[1][1])
         )
 
     @property
