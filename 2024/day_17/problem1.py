@@ -18,7 +18,7 @@ def _combo_operand(operand: int, registers: dict):
             "Tried to do a combo operand on reserved operand [7]."
         )
 
-    return operand if operand < 3 else registers[_REGISTERS[operand-4]]
+    return operand if operand <= 3 else registers[_REGISTERS[operand-4]]
 
 
 def _adv_instruction(operand: int, registers: dict):
@@ -102,11 +102,9 @@ def main():
     instruction_ptr = 0
     program_output = []
     while instruction_ptr < len(program)-1:
-        print(instruction_ptr)
-        print(registers)
         # Grab our opcode and operand based on the position of the instruction ptr
         opcode, operand = program[instruction_ptr:instruction_ptr+2]
-        print(opcode)
+
         # Get the instruction corresponding to this opcode and run it
         opcode_instruction = _INSTRUCTIONS[opcode]
         instruction_output = opcode_instruction(operand, registers)
@@ -114,9 +112,7 @@ def main():
         # Mutate stuff in our program space based on the output if we have certain op codes
         jumped = False
         if opcode == 3:  # jnz instruction, sets ptr
-            print(instruction_output)
             if instruction_output is not None:
-                print(instruction_output)
                 instruction_ptr = instruction_output
                 jumped = True
         elif opcode == 5:  # out instruction, adds output to our program
@@ -130,8 +126,10 @@ def main():
     program_output_str = ",".join([str(num) for num in program_output])
 
     # Output our result
-    print("The resulting output once the program halts is:\n")
-    print(program_output_str)
+    print(
+        "The resulting output once the program halts is: "
+        f"{program_output_str}"
+    )
 
 
 if __name__ == "__main__":
