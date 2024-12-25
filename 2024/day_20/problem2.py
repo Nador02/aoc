@@ -15,6 +15,7 @@ _NUM_TIME_SAVED_LIMIT = 100
 
 
 def _get_surrounding_spaces(spot: tuple):
+    """Get surrounding spaces in the racetrack map."""
     return [
         (spot[0] + 1, spot[1]),
         (spot[0] - 1, spot[1]),
@@ -23,23 +24,43 @@ def _get_surrounding_spaces(spot: tuple):
     ]
 
 
-def _get_cheat_positions_from_position(position: tuple, time_history: dict, walls: set, track: set):
-    # TODO: just make this a depth first search that goes out 6 spaces in all directions to get any
-    # unique cheat positions into our set
+def _get_cheat_positions_from_position(position: tuple, walls: set, track: set):
+    """BFS around our given position to get all potential cheat locations
+    within 6 picosends of range.
+    """
     cheat_positions = set()
-    for neighbor in _get_surrounding_spaces(position):
-        if neighbor not in walls:
+    visited_positions = set()
+    neighboring_positions_queue = [(position, 0)]
+    while neighboring_positions_queue:
+        # Get our next position from the queue
+        curr_position, picoseconds = neighboring_positions_queue.pop(0)
+
+        # Define conditions for if we should skip over this point
+        outside_racetrack = curr_position not in walls and curr_position not in track
+        exceeding_cheat_time = picoseconds == 21
+        already_visited = curr_position in visited_positions
+        if outside_racetrack or exceeding_cheat_time or already_visited:
             continue
 
-        neighbor_neighbors = _get_surrounding_spaces(neighbor)
-        for neighbor_neighbor in neighbor_neighbors:
-            if neighbor_neighbor == position:
-                continue
+        # Otherwise add to visited and get its neighbors to add into the queue
+        visited_positions.add(curr_position)
 
-            if neighbor_neighbor in time_history:
-                cheat_positions.add(neighbor_neighbor)
+        # Only add our value to the cheat positions if it is a part of our track
+        if curr_position in track and curr_position != position:
+            cheat_positions.add(curr_position)
+
+        # Add neighbors to the queue and increment our picoseconds
+        neighboring_positions_queue.extend(
+            [(neighbor, picoseconds+1)
+             for neighbor in _get_surrounding_spaces(curr_position)]
+        )
 
     return cheat_positions
+
+
+def _get_manhattan_distance(position_1: tuple, position_2: tuple):
+    """Get the manhattan (or taxicab) distance between 2 positions."""
+    return abs(position_1[0]-position_2[0]) + abs(position_1[1]-position_2[1])
 
 
 class RaceProgram():
@@ -95,8 +116,10 @@ def main():
                 track.add((i, j))
             elif space == _END:
                 end = (i, j)
+                track.add((i, j))
             elif space == _START:
                 race_program = RaceProgram((i, j))
+                track.add((i, j))
 
     # March our main race program through the racetrack
     while not race_program.is_finished(end):
@@ -114,12 +137,18 @@ def main():
         )
 
         for cheat_position in cheat_positions:
-            # Cursed formatting
-            time_saved = (
-                race_program.time_history[cheat_position]
-                # Bruh wtf is this -2
-                - race_program.time_history[position] - 2
+            # Determine the manhattan (or taxicab) distance between
+            # two points in our racetrack map
+            manhattan_distance = _get_manhattan_distance(
+                position,
+                cheat_position
             )
+            # Determine the amount of time we saved
+            position_time = race_program.time_history[position]
+            cheat_time = race_program.time_history[cheat_position]
+            time_saved = cheat_time - position_time - manhattan_distance
+
+            # If we saved enough time we add to our sum
             if time_saved >= _NUM_TIME_SAVED_LIMIT:
                 cheats_saving_enough_time += 1
 
