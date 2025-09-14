@@ -1,0 +1,8 @@
+[workspace]
+members = [
+    "day_01",
+]
+resolver = "3"
+
+[profile.release]
+debug = true
