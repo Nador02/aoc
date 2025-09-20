@@ -3,6 +3,7 @@ use itertools::Itertools;
 use std::fs;
 
 /// Represents an IntCode Program
+#[derive(Clone)]
 pub struct IntCode {
     code: Vec<usize>,
 }
