@@ -21,10 +21,6 @@ fn get_required_fuel_for_mass(mass: i64) -> i64 {
 }
 
 /// Get the required fuel for a module AND all its required fuel mass (recursive solve).
-/// 
-/// ### Notes
-/// We are caching here with the ``cached`` macro to reduce recursive calls when we have 
-/// already computed the required fuel for a given mass
 #[cached]
 fn get_required_full_fuel_for_mass(mass: i64) -> i64 {
     let required_fuel_mass = mass / 3 - 2;
@@ -32,7 +28,7 @@ fn get_required_full_fuel_for_mass(mass: i64) -> i64 {
     if required_fuel_mass <= 0 {
         return 0
     }
-
+    
     return required_fuel_mass + get_required_full_fuel_for_mass(required_fuel_mass)
 }
 
