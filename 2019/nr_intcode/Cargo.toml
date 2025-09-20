@@ -1,9 +1,8 @@
 [package]
-name = "day_02"
+name = "nr_intcode"
 version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-nr_intcode = { path = "../nr_intcode" }
-anyhow = "1.0.99"
+anyhow = "1.0.100"
 itertools = "0.14.0"

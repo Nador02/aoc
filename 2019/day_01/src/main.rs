@@ -26,10 +26,10 @@ fn get_required_full_fuel_for_mass(mass: i64) -> i64 {
     let required_fuel_mass = mass / 3 - 2;
     // base case
     if required_fuel_mass <= 0 {
-        return 0
+        return 0;
     }
-    
-    return required_fuel_mass + get_required_full_fuel_for_mass(required_fuel_mass)
+
+    return required_fuel_mass + get_required_full_fuel_for_mass(required_fuel_mass);
 }
 
 /// Compute the total required fuel mass for the rocket
@@ -45,7 +45,9 @@ fn part_1() -> anyhow::Result<()> {
 /// for the required fuel to carry the required fuel (recursive!)
 fn part_2() -> anyhow::Result<()> {
     let module_masses = read_input_ints_from_disk("data/input.txt")?;
-    let fuel_masses = module_masses.into_iter().map(get_required_full_fuel_for_mass);
+    let fuel_masses = module_masses
+        .into_iter()
+        .map(get_required_full_fuel_for_mass);
     println!("Part 2:\n-------");
     println!("Required fuel mass: {}\n", fuel_masses.sum::<i64>());
     Ok(())
