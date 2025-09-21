@@ -63,7 +63,7 @@ fn part_2() -> anyhow::Result<()> {
     Ok(())
 }
 
-/// Main runner for Day 01
+/// Main runner for Day 02
 fn main() -> anyhow::Result<()> {
     println!("Part 1:\n-------\n");
     part_1()?;
