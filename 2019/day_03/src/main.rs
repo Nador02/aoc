@@ -4,6 +4,7 @@ use std::fs;
 
 const CIRCUIT_ORIGIN_POSITION: CircuitPosition = CircuitPosition { x: 0, y: 0 };
 
+#[derive(Clone, Copy)]
 pub struct CircuitPosition {
     x: usize,
     y: usize,
@@ -55,8 +56,45 @@ impl TryFrom<&str> for Segment {
     }
 }
 
+impl Segment {
+    pub fn get_points_for_segment(&self, starting_position: CircuitPosition) -> anyhow::Result<Vec<CircuitPosition>> {
+        Ok(match self.direction {
+            Direction::Right => (starting_position.x..(starting_position.x + self.length)).into_iter().map(|x| CircuitPosition{
+                x,
+                y: starting_position.y,
+            }).collect(),
+            Direction::Left => (starting_position.x..(starting_position.x - self.length)).rev().into_iter().map(|x| CircuitPosition{
+                x,
+                y: starting_position.y,
+            }).collect(),
+            Direction::Up => (starting_position.y..(starting_position.y + self.length)).into_iter().map(|y| CircuitPosition{
+                x: starting_position.x,
+                y,
+            }).collect(),
+            Direction::Down => (starting_position.y..(starting_position.y - self.length)).rev().into_iter().map(|y| CircuitPosition{
+                x: starting_position.x,
+                y,
+            }).collect(),
+        })
+    }
+}
+
 pub struct Wire {
     path: Vec<Segment>,
+}
+
+impl Wire {
+    pub fn get_points_for_wire_path(&self) -> anyhow::Result<Vec<CircuitPosition>> {
+        let mut current_position = CIRCUIT_ORIGIN_POSITION;
+        Ok(self.path
+            .iter()
+            .flat_map(|segment| {
+                let segment_points = segment.get_points_for_segment(current_position).unwrap();
+                current_position = segment_points.last().copied().expect("Uh no points for this segment?");
+                segment_points
+            })
+            .collect())
+    }
 }
 
 impl TryFrom<&str> for Wire {
