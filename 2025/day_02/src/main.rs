@@ -53,7 +53,13 @@ fn read_product_id_ranges(file_path: &str) -> anyhow::Result<Vec<RangeInclusive<
 /// `99` -> `true`
 /// `12345` -> `false`
 /// `123123123` -> `false`
-fn is_num_repeating_twice(num: i64) -> anyhow::Result<bool> {
+///
+/// # Note
+/// This two pointer solution worked but is somehow slower than my brute force
+/// slice comparison approach? Not really sure why, can look into that later
+/// cause its interesting I must have done some super bad performance Rust thing!
+#[allow(dead_code)]
+fn is_num_repeating_twice_two_pointers(num: i64) -> anyhow::Result<bool> {
     // This is dangerous but we can do it safely because
     // we are definitely only ASCII as these are ints -> strings
     let num_str = num.to_string();
@@ -83,6 +89,48 @@ fn is_num_repeating_twice(num: i64) -> anyhow::Result<bool> {
     Ok(true)
 }
 
+/// Check if a number is repeating any N times
+fn is_num_repeating_n_times(num: i64, num_repetitions: usize) -> anyhow::Result<bool> {
+    // This is dangerous but we can do it safely because
+    // we are definitely only ASCII as these are ints -> strings
+    let num_str = num.to_string();
+
+    // If the number is not evenly divisible by the number of repetitions we
+    // can just skip over it before doing anything else
+    if num_str.len() % num_repetitions != 0 || num_str.len() < num_repetitions {
+        return Ok(false);
+    }
+
+    // Otherwise compare slices
+    let pattern_length = num_str.len() / num_repetitions;
+    let front_pattern = &num_str[..pattern_length];
+    for repeated_pattern_front_index in 1..num_repetitions {
+        let curr_pattern = &num_str[repeated_pattern_front_index * pattern_length
+            ..repeated_pattern_front_index * pattern_length + pattern_length];
+        let patterns_match = front_pattern
+            .chars()
+            .zip(curr_pattern.chars())
+            .all(|(expected_char, found_char)| expected_char == found_char);
+
+        if !patterns_match {
+            return Ok(false);
+        }
+    }
+
+    Ok(true)
+}
+
+/// Check if a number is repeating AT ALL (any valid N times)
+fn is_num_repeating(num: i64) -> anyhow::Result<bool> {
+    for num_repetitions in 2..=num.to_string().len() {
+        if is_num_repeating_n_times(num, num_repetitions)? {
+            return Ok(true);
+        }
+    }
+
+    Ok(false)
+}
+
 /// Part 1
 fn part_1() -> anyhow::Result<()> {
     // Load in our product ID ranges
@@ -92,7 +140,36 @@ fn part_1() -> anyhow::Result<()> {
     let mut invalid_id_sum = 0;
     for range in ranges {
         for product_id in range {
-            let is_product_id_invalid = is_num_repeating_twice(product_id).with_context(|| {
+            let is_product_id_invalid =
+                is_num_repeating_n_times(product_id, 2).with_context(|| {
+                    format!("failed to check if product ID: {product_id} is repeating")
+                })?;
+
+            if is_product_id_invalid {
+                invalid_id_sum += product_id;
+            }
+        }
+    }
+
+    // Output the result
+    println!(
+        "Part 1: Adding up all the invalid product IDs (with double repetition) yields: {}",
+        invalid_id_sum
+    );
+
+    Ok(())
+}
+
+/// Part 2
+fn part_2() -> anyhow::Result<()> {
+    // Load in our product ID ranges
+    let ranges = read_product_id_ranges("data/input.txt")?;
+
+    // Sum together all the product IDs that are non-repeating in our ranges
+    let mut invalid_id_sum = 0;
+    for range in ranges {
+        for product_id in range {
+            let is_product_id_invalid = is_num_repeating(product_id).with_context(|| {
                 format!("failed to check if product ID: {product_id} is repeating")
             })?;
 
@@ -104,21 +181,16 @@ fn part_1() -> anyhow::Result<()> {
 
     // Output the result
     println!(
-        "Part 1: Adding up all the invalid product IDs yields: {}",
+        "Part 2: Adding up all the invalid product IDs (with ANY repetition) yields: {}",
         invalid_id_sum
     );
 
     Ok(())
 }
 
-// /// Part 2
-// fn part_2() -> anyhow::Result<()> {
-//     todo!("Part 2!");
-// }
-
 /// Main runner template
 fn main() -> anyhow::Result<()> {
     part_1()?;
-    // part_2()?;
+    part_2()?;
     Ok(())
 }
