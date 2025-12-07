@@ -16,6 +16,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "day_02"
+version = "0.1.0"
+dependencies = [
+ "anyhow",
+]
+
+[[package]]
 name = "nr_template"
 version = "0.1.0"
 dependencies = [
