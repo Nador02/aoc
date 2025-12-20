@@ -5,6 +5,3 @@ edition = "2024"
 
 [dependencies]
 anyhow = "1.0.99"
-
-[profile.release]
-debug = true
