@@ -1,19 +1,44 @@
 use itertools::Itertools;
 use std::{
-    collections::HashSet, fmt::Display, fs::File, io::{BufRead, BufReader}
+    collections::HashSet,
+    fmt::Display,
+    fs::File,
+    io::{BufRead, BufReader},
+    ops::Add,
 };
 
-#[derive(PartialEq, Eq, Hash)]
+#[derive(PartialEq, Eq, Hash, Clone, Copy)]
 struct Point {
-    i: usize,
-    j: usize
+    i: i32,
+    j: i32,
 }
 
 impl Point {
-    pub fn new(i: usize, j: usize) -> Self {
+    pub fn new(i: i32, j: i32) -> Self {
+        Self { i, j }
+    }
+
+    pub fn get_neighboring_points(&self) -> HashSet<Point> {
+        HashSet::from([
+            *self + Point::new(-1, 0),
+            *self + Point::new(-1, 1),
+            *self + Point::new(0, 1),
+            *self + Point::new(1, 1),
+            *self + Point::new(1, 0),
+            *self + Point::new(1, -1),
+            *self + Point::new(0, -1),
+            *self + Point::new(-1, -1),
+        ])
+    }
+}
+
+impl Add for Point {
+    type Output = Point;
+
+    fn add(self, rhs: Self) -> Self::Output {
         Self {
-            i,
-            j
+            i: self.i + rhs.i,
+            j: self.j + rhs.j,
         }
     }
 }
@@ -36,36 +61,34 @@ impl PaperRollsDiagram {
         // Load in our file buffer
         let input = File::open(file_path)?;
         let buffered = BufReader::new(input);
-        
-        // Load in rows and from that determine our 
-        let rows: Vec<String> = buffered
-            .lines()
-            .map(|line| line)
-            .try_collect()?;
+
+        // Load in rows and from that determine our
+        let rows: Vec<String> = buffered.lines().try_collect()?;
         let width = rows[0].len();
         let height = rows.len();
 
         Ok(Self {
             grid: rows
                 .into_iter()
-                .map(|row| row.chars().collect::<Vec<char>>())
-                .flatten()
+                .flat_map(|row| row.chars().collect::<Vec<char>>())
                 .collect(),
             width,
-            height
+            height,
         })
     }
 
     pub fn get_paper_roll(&self, point: Point) -> char {
-        return self.grid[self.width*point.i + point.j]
+        self.grid[self.width * (point.i as usize) + (point.j as usize)]
     }
 
     pub fn get_all_paper_roll_points(&self) -> HashSet<Point> {
         let mut paper_roll_points = HashSet::new();
         for i in 0..self.height {
             for j in 0..self.width {
-                if self.get_paper_roll(Point::new(i,j)) == '@' {
-                    paper_roll_points.insert(Point::new(i,j));
+                let i = i as i32;
+                let j = j as i32;
+                if self.get_paper_roll(Point::new(i, j)) == '@' {
+                    paper_roll_points.insert(Point::new(i, j));
                 }
             }
         }
@@ -76,15 +99,28 @@ impl PaperRollsDiagram {
 
 /// Part 1
 fn part_1() -> anyhow::Result<()> {
-    let paper_rolls_diagram = PaperRollsDiagram::from_disk("data/example.txt")?;
-    for point in paper_rolls_diagram.get_all_paper_roll_points() {
-        println!("{}", point);
+    let paper_rolls_diagram = PaperRollsDiagram::from_disk("data/input.txt")?;
+
+    let paper_roll_points = paper_rolls_diagram.get_all_paper_roll_points();
+    let mut num_forklift_accessible_rolls = 0;
+    for point in &paper_roll_points {
+        let neighboring_points = point.get_neighboring_points();
+        let neighboring_paper_rolls: HashSet<Point> = neighboring_points
+            .intersection(&paper_roll_points)
+            .copied()
+            .collect();
+
+        if neighboring_paper_rolls.len() < 4 {
+            num_forklift_accessible_rolls += 1;
+        }
     }
+
+    println!("[Part 1] Number of Forklift Accessible Rolls: {num_forklift_accessible_rolls}");
     Ok(())
 }
 
 /// Part 2
-fn part_2() -> anyhow::Result<()> {
+fn _part_2() -> anyhow::Result<()> {
     todo!("Part 2!");
 }
 
