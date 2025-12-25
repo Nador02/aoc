@@ -59,6 +59,32 @@ impl IngredientIDRanges {
 
         false
     }
+
+    pub fn into_combined_ranges(self) -> anyhow::Result<Self> {
+        let mut combined_ranges: Vec<RangeInclusive<usize>> = Vec::new();
+        for range in self.0 {
+            let mut combined_into_existing_range = false;
+            for (idx, combined_range) in combined_ranges.clone().iter().enumerate() {
+                if !(range.start() >= combined_range.start() && range.start() <= combined_range.end()) {
+                    continue;
+                }
+                
+                combined_ranges.remove(idx);
+                combined_ranges.push(RangeInclusive::new(
+                    *combined_range.start(),
+                    *(range.end().max(combined_range.end()))
+                ));
+                combined_into_existing_range = true;
+                break;
+            }
+
+            if !combined_into_existing_range {
+                combined_ranges.push(range);
+            }
+        }
+
+        Ok(Self(combined_ranges))
+    }
 }
 
 /// Read in input
@@ -111,14 +137,21 @@ fn part_1() -> anyhow::Result<()> {
 }
 
 /// Part 2
-#[allow(dead_code)]
 fn part_2() -> anyhow::Result<()> {
-    todo!("Part 2!");
+    let (fresh_ingredient_ids, _) =
+        get_fresh_and_available_ingredient_ids_from_disk("data/example.txt")?;
+    let fresh_ingredient_ids = fresh_ingredient_ids.into_combined_ranges()?;
+    println!("Fresh Ingredient IDs (Combined): {fresh_ingredient_ids}");
+    let num_ingredients_considered_fresh = fresh_ingredient_ids.0
+        .into_iter()
+        .fold(0, |acc, ingredient_id_range| acc + ingredient_id_range.count());
+    println!("[Part 2]: Number of Ingredients Considered Fresh: {num_ingredients_considered_fresh}");
+    Ok(())
 }
 
 /// Main runner template
 fn main() -> anyhow::Result<()> {
     part_1()?;
-    // part_2()?;
+    part_2()?;
     Ok(())
 }
